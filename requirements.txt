@@ -1,0 +1,5 @@
+floris==4.6
+numpy>=1.24
+matplotlib>=3.7
+scipy>=1.11
+pandas>=2.0

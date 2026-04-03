@@ -1,0 +1,14 @@
+# Python virtual environment
+floris_env/
+
+# Generated outputs (run the scripts to recreate these)
+outputs/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
