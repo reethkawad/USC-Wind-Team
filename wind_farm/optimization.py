@@ -120,6 +120,53 @@ def run_layout_optimization(
     )
 
 
+def compute_per_turbine_aep(
+    fm,
+    layout_x: list,
+    layout_y: list,
+    wind_directions: np.ndarray,
+    wind_speeds: np.ndarray,
+    freq_table: np.ndarray,
+    ti: float = 0.06,
+) -> np.ndarray:
+    """Compute per-turbine AEP in GWh by integrating over the full wind rose.
+
+    Uses the same freq * 8760 * power formula as get_farm_AEP() internally,
+    but accumulates per-turbine instead of farm-total.
+
+    Args:
+        fm:              FlorisModel instance.
+        layout_x/y:      Turbine coordinates.
+        wind_directions: 1-D array from load_wind_rose.
+        wind_speeds:     1-D array from load_wind_rose.
+        freq_table:      Normalised 2-D array from load_wind_rose, shape (n_wd, n_ws).
+        ti:              Turbulence intensity.
+
+    Returns:
+        1-D float64 array of shape (n_turbines,) in GWh/year.
+    """
+    n_turbines = len(layout_x)
+    turbine_aep_wh = np.zeros(n_turbines)
+
+    for i, wd in enumerate(wind_directions):
+        for j, ws in enumerate(wind_speeds):
+            freq = freq_table[i, j]
+            if freq <= 0:
+                continue
+            fm.set(
+                layout_x=layout_x,
+                layout_y=layout_y,
+                wind_directions=[float(wd)],
+                wind_speeds=[float(ws)],
+                turbulence_intensities=[ti],
+            )
+            fm.run()
+            turbine_powers = fm.get_turbine_powers().flatten()
+            turbine_aep_wh += turbine_powers * freq * 8760.0
+
+    return turbine_aep_wh / 1e9  # GWh/year
+
+
 def compute_aep_with_yaw(
     fm,
     layout_x: list,

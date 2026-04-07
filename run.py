@@ -6,6 +6,7 @@ Unified CLI entry point for the wind farm optimization pipeline.
 Usage
 -----
     python run.py <command> [<command> ...]
+    python run.py optimal --n <N>
 
 Commands (run in the order given):
     wake    Wake field visualization (3×3 grid)
@@ -13,6 +14,7 @@ Commands (run in the order given):
     yaw     Yaw angle optimization (wake steering)
     full    Full end-to-end analysis pipeline
     count   Turbine count sweep (find optimal turbine count)
+    optimal Full pipeline for a specified turbine count N
 
 Examples
 --------
@@ -21,6 +23,7 @@ Examples
     python run.py count layout wake     # runs: count → layout → wake
     python run.py full
     python run.py wake layout yaw full  # all four in sequence
+    python run.py optimal --n 12        # full pipeline for N=12 turbines
 """
 
 from __future__ import annotations
@@ -35,11 +38,12 @@ if str(_PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(_PROJECT_DIR))
 
 COMMANDS: dict[str, str] = {
-    "wake":   "Wake field visualization (3×3 grid)",
-    "layout": "Layout optimization (turbine positions)",
-    "yaw":    "Yaw angle optimization (wake steering)",
-    "full":   "Full end-to-end analysis pipeline",
-    "count":  "Turbine count sweep (find optimal count)",
+    "wake":    "Wake field visualization (3×3 grid)",
+    "layout":  "Layout optimization (turbine positions)",
+    "yaw":     "Yaw angle optimization (wake steering)",
+    "full":    "Full end-to-end analysis pipeline",
+    "count":   "Turbine count sweep (find optimal count)",
+    "optimal": "Full pipeline for specified N (use --n to set count)",
 }
 
 
@@ -57,6 +61,13 @@ def main() -> None:
         metavar="COMMAND",
         help=f"One or more commands to run in order. Choices: {list(COMMANDS)}",
     )
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=9,
+        metavar="N",
+        help="Number of turbines for the 'optimal' command (default: 9)",
+    )
     args = parser.parse_args()
 
     for cmd in args.commands:
@@ -70,6 +81,10 @@ def main() -> None:
             from scripts.full import run
         elif cmd == "count":
             from scripts.count import run
+        elif cmd == "optimal":
+            from scripts.optimal import run as _run
+            _run(n_turbines=args.n)
+            continue
         run()
 
 
