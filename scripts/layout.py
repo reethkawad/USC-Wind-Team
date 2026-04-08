@@ -23,16 +23,13 @@ import pandas as pd
 
 from wind_farm.config import (
     CONFIG_GCH as CONFIG_PATH, WIND_ROSE_CSV, OUTPUT_DIR, ROTOR_DIAMETER,
+    SITE_SIZE_M, N_TURBINES,
 )
 from wind_farm.wind_data import load_wind_rose
 from wind_farm.layouts import build_meshgrid_layout
 from wind_farm.optimization import load_floris_model, compute_aep, run_layout_optimization
 from wind_farm.plotting import plot_layout_comparison
 
-# ---------------------------------------------------------------------------
-# Site parameters
-# ---------------------------------------------------------------------------
-SITE_SIZE_M = 5000.0
 BOUNDARIES: list[tuple[float, float]] = [
     (0.0, 0.0),
     (SITE_SIZE_M, 0.0),
@@ -56,7 +53,7 @@ def run() -> None:
     print("\n[2/4] Building initial layout …")
     fm = load_floris_model(CONFIG_PATH)
     layout_x_init, layout_y_init = build_meshgrid_layout(
-        n_turbines=9, rotor_diameter=ROTOR_DIAMETER, spacing_d=5.0, site_size=SITE_SIZE_M
+        n_turbines=N_TURBINES, rotor_diameter=ROTOR_DIAMETER, spacing_d=5.0, site_size=SITE_SIZE_M
     )
     print(f"      {len(layout_x_init)} turbines in 3×3 grid")
 

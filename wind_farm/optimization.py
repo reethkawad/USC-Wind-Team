@@ -11,6 +11,8 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from wind_farm.config import TI_DEFAULT, WIND_SPEED_YAW, YAW_MIN_ANGLE, YAW_MAX_ANGLE, HOURS_PER_YEAR
+
 
 def load_floris_model(config_path: Path):
     """Import FlorisModel and instantiate from a YAML config file.
@@ -127,7 +129,7 @@ def compute_per_turbine_aep(
     wind_directions: np.ndarray,
     wind_speeds: np.ndarray,
     freq_table: np.ndarray,
-    ti: float = 0.06,
+    ti: float = TI_DEFAULT,
 ) -> np.ndarray:
     """Compute per-turbine AEP in GWh by integrating over the full wind rose.
 
@@ -162,7 +164,7 @@ def compute_per_turbine_aep(
             )
             fm.run()
             turbine_powers = fm.get_turbine_powers().flatten()
-            turbine_aep_wh += turbine_powers * freq * 8760.0
+            turbine_aep_wh += turbine_powers * freq * HOURS_PER_YEAR
 
     return turbine_aep_wh / 1e9  # GWh/year
 
@@ -176,8 +178,8 @@ def compute_aep_with_yaw(
     wind_speeds: np.ndarray,
     freq_table: np.ndarray,
     top_n_dirs: int = 2,
-    wind_speed_yaw: float = 8.0,
-    ti: float = 0.06,
+    wind_speed_yaw: float = WIND_SPEED_YAW,
+    ti: float = TI_DEFAULT,
 ) -> tuple[float, pd.DataFrame]:
     """Compute AEP after per-direction yaw optimisation.
 
@@ -227,8 +229,8 @@ def compute_aep_with_yaw(
         )
         yaw_opt = YawOptimizationScipy(
             fmodel=fm,
-            minimum_yaw_angle=-25.0,
-            maximum_yaw_angle=25.0,
+            minimum_yaw_angle=YAW_MIN_ANGLE,
+            maximum_yaw_angle=YAW_MAX_ANGLE,
         )
         df_opt = yaw_opt.optimize()
         yaw_angles = np.array(df_opt["yaw_angles_opt"].iloc[0]).flatten()
@@ -256,7 +258,7 @@ def compute_aep_with_yaw(
             )
             fm.run()
             farm_power = fm.get_farm_power().item()
-            total_aep_wh += farm_power * freq * 8760.0
+            total_aep_wh += farm_power * freq * HOURS_PER_YEAR
 
     aep_gwh = total_aep_wh / 1e9
     return aep_gwh, yaw_df

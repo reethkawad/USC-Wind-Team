@@ -3,27 +3,21 @@ run.py
 ======
 Unified CLI entry point for the wind farm optimization pipeline.
 
-Usage
------
-    python run.py <command> [<command> ...]
-    python run.py optimal --n <N>
+Workflow
+--------
+    1. python run.py count          # find optimal turbine count N
+    2. python run.py optimal --n N  # layout opt + wake study + yaw opt for N
 
-Commands (run in the order given):
-    wake    Wake field visualization (3×3 grid)
-    layout  Layout optimization (turbine positions → max AEP)
-    yaw     Yaw angle optimization (wake steering)
+Additional commands:
+    layout  Layout optimization only (turbine positions)
     full    Full end-to-end analysis pipeline
-    count   Turbine count sweep (find optimal turbine count)
-    optimal Full pipeline for a specified turbine count N
 
 Examples
 --------
-    python run.py wake
+    python run.py count
+    python run.py optimal --n 9
     python run.py layout
-    python run.py count layout wake     # runs: count → layout → wake
     python run.py full
-    python run.py wake layout yaw full  # all four in sequence
-    python run.py optimal --n 12        # full pipeline for N=12 turbines
 """
 
 from __future__ import annotations
@@ -38,9 +32,7 @@ if str(_PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(_PROJECT_DIR))
 
 COMMANDS: dict[str, str] = {
-    "wake":    "Wake field visualization (3×3 grid)",
     "layout":  "Layout optimization (turbine positions)",
-    "yaw":     "Yaw angle optimization (wake steering)",
     "full":    "Full end-to-end analysis pipeline",
     "count":   "Turbine count sweep (find optimal count)",
     "optimal": "Full pipeline for specified N (use --n to set count)",
@@ -71,12 +63,8 @@ def main() -> None:
     args = parser.parse_args()
 
     for cmd in args.commands:
-        if cmd == "wake":
-            from scripts.wake import run
-        elif cmd == "layout":
+        if cmd == "layout":
             from scripts.layout import run
-        elif cmd == "yaw":
-            from scripts.yaw import run
         elif cmd == "full":
             from scripts.full import run
         elif cmd == "count":

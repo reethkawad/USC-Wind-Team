@@ -36,6 +36,8 @@ import pandas as pd
 from wind_farm.config import (
     CONFIG_GCH as CONFIG_PATH, WIND_ROSE_CSV, OUTPUT_DIR,
     ROTOR_DIAMETER, TI_DEFAULT,
+    SITE_SIZE_M, N_TURBINES, WIND_SPEED_YAW, N_YAW_DIRS,
+    WAKE_PLOT_X_RES, WAKE_PLOT_Y_RES, WAKE_VIZ_MIN_SPEED, WAKE_VIZ_MAX_SPEED, FIGURE_DPI,
 )
 from wind_farm.wind_data import load_wind_rose
 from wind_farm.layouts import build_meshgrid_layout
@@ -44,18 +46,12 @@ from wind_farm.optimization import (
 )
 from wind_farm.plotting import plot_layout_comparison, plot_wind_rose
 
-# ---------------------------------------------------------------------------
-# Site / pipeline parameters
-# ---------------------------------------------------------------------------
-SITE_SIZE_M = 5000.0
-N_TURBINES = 9
 BOUNDARIES = [
     (0.0, 0.0),
     (SITE_SIZE_M, 0.0),
     (SITE_SIZE_M, SITE_SIZE_M),
     (0.0, SITE_SIZE_M),
 ]
-N_YAW_DIRS = 2   # number of top-frequency directions to yaw-optimise
 
 
 def plot_wake_optimised(fm, layout_x: list, layout_y: list, output_path: Path) -> None:
@@ -67,27 +63,27 @@ def plot_wake_optimised(fm, layout_x: list, layout_y: list, output_path: Path) -
         layout_x=layout_x,
         layout_y=layout_y,
         wind_directions=[270.0],
-        wind_speeds=[8.0],
+        wind_speeds=[WIND_SPEED_YAW],
         turbulence_intensities=[TI_DEFAULT],
         yaw_angles=np.zeros((1, len(layout_x))),
     )
     fm.run()
     hub_height = fm.core.farm.hub_heights.flat[0]
-    hp = fm.calculate_horizontal_plane(x_resolution=300, y_resolution=150, height=hub_height)
+    hp = fm.calculate_horizontal_plane(x_resolution=WAKE_PLOT_X_RES, y_resolution=WAKE_PLOT_Y_RES, height=hub_height)
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    flowviz.visualize_cut_plane(hp, ax=ax, min_speed=4.0, max_speed=9.0, color_bar=True)
+    flowviz.visualize_cut_plane(hp, ax=ax, min_speed=WAKE_VIZ_MIN_SPEED, max_speed=WAKE_VIZ_MAX_SPEED, color_bar=True)
     layoutviz.plot_turbine_rotors(fm, ax=ax)
     farm_mw = fm.get_turbine_powers().sum() / 1e6
     ax.set_title(
-        f"Wake Field — Optimised Layout, Wind 270° at 8 m/s\n"
+        f"Wake Field — Optimised Layout, Wind 270° at {WIND_SPEED_YAW:.0f} m/s\n"
         f"Farm power = {farm_mw:.2f} MW  |  GCH Wake Model",
         fontsize=13,
     )
     ax.set_xlabel("x (m)")
     ax.set_ylabel("y (m)")
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -127,7 +123,7 @@ def plot_aep_waterfall(
     ax.grid(axis="y", alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 

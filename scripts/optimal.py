@@ -43,6 +43,17 @@ from wind_farm.config import (
     ROTOR_DIAMETER,
     HUB_HEIGHT,
     TI_DEFAULT,
+    SITE_SIZE_M,
+    MIN_SPACING_D,
+    WIND_SPEED_YAW,
+    WAKE_PLOT_X_RES,
+    WAKE_PLOT_Y_RES,
+    WAKE_VIZ_MIN_SPEED,
+    WAKE_VIZ_MAX_SPEED,
+    FIGURE_DPI,
+    YAW_MIN_ANGLE,
+    YAW_MAX_ANGLE,
+    HOURS_PER_YEAR,
 )
 from wind_farm.wind_data import load_wind_rose
 from wind_farm.layouts import build_rowmajor_layout
@@ -56,14 +67,12 @@ from wind_farm.optimization import (
 from wind_farm.plotting import plot_layout_comparison
 
 # ---------------------------------------------------------------------------
-# Site parameters — edit if needed
+# Script-level parameters — edit wind speed / site size in wind_farm/config.py
 # ---------------------------------------------------------------------------
-SITE_SIZE_M: float = 5000.0
-MIN_SPACING_D: float = 2.0
 LAYOUT_MAXITER: int = 300          # higher than count sweep (100)
 YAW_FREQ_THRESHOLD: float = 0.01   # directions contributing >1% of annual hours
 WAKE_WIND_DIR: float | None = None  # None → auto-detect dominant direction
-WAKE_WIND_SPEED: float = 8.0       # m/s for wake/yaw visualisation
+WAKE_WIND_SPEED: float = WIND_SPEED_YAW
 RATED_POWER_MW: float = 5.0        # NREL 5 MW
 
 BOUNDARIES: list[tuple[float, float]] = [
@@ -86,12 +95,12 @@ def _plot_wake_field(fm, title: str, output_path: Path) -> None:
     fig, ax = plt.subplots(figsize=(12, 8))
 
     horizontal_plane = fm.calculate_horizontal_plane(
-        x_resolution=300,
-        y_resolution=150,
+        x_resolution=WAKE_PLOT_X_RES,
+        y_resolution=WAKE_PLOT_Y_RES,
         height=hub_h,
     )
     flowviz.visualize_cut_plane(
-        horizontal_plane, ax=ax, min_speed=4.0, max_speed=9.0, color_bar=True
+        horizontal_plane, ax=ax, min_speed=WAKE_VIZ_MIN_SPEED, max_speed=WAKE_VIZ_MAX_SPEED, color_bar=True
     )
     layoutviz.plot_turbine_rotors(fm, ax=ax)
 
@@ -99,7 +108,7 @@ def _plot_wake_field(fm, title: str, output_path: Path) -> None:
     ax.set_xlabel("x (m)", fontsize=11)
     ax.set_ylabel("y (m)", fontsize=11)
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -113,12 +122,12 @@ def _plot_layout_wake(fm, layout_x, layout_y, title: str, output_path: Path) -> 
     fig, ax = plt.subplots(figsize=(12, 8))
 
     horizontal_plane = fm.calculate_horizontal_plane(
-        x_resolution=300,
-        y_resolution=150,
+        x_resolution=WAKE_PLOT_X_RES,
+        y_resolution=WAKE_PLOT_Y_RES,
         height=hub_h,
     )
     flowviz.visualize_cut_plane(
-        horizontal_plane, ax=ax, min_speed=4.0, max_speed=9.0, color_bar=True
+        horizontal_plane, ax=ax, min_speed=WAKE_VIZ_MIN_SPEED, max_speed=WAKE_VIZ_MAX_SPEED, color_bar=True
     )
     # Rotor circles on top of the velocity colormap
     for x, y in zip(layout_x, layout_y):
@@ -138,7 +147,7 @@ def _plot_layout_wake(fm, layout_x, layout_y, title: str, output_path: Path) -> 
     ax.set_xlabel("x (m)", fontsize=11)
     ax.set_ylabel("y (m)", fontsize=11)
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -170,7 +179,7 @@ def _plot_turbine_powers(powers_kw: np.ndarray, wind_dir: float, wind_speed: flo
         bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8),
     )
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -205,7 +214,7 @@ def _plot_yaw_comparison(yaw_df: pd.DataFrame, output_path: Path) -> None:
     ax2.grid(True, alpha=0.3, axis="y")
 
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -242,7 +251,7 @@ def _plot_aep_waterfall(aep_init: float, aep_layout: float, aep_yaw: float,
     ax.set_ylim(0, max(values) * 1.12)
     ax.grid(True, alpha=0.3, axis="y")
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -364,7 +373,7 @@ def run(n_turbines: int = 9) -> None:
         fm_pt, layout_x_opt, layout_y_opt,
         wind_directions, wind_speeds, freq_table, ti=TI_DEFAULT,
     )
-    rated_annual_gwh = RATED_POWER_MW * 8760.0 / 1e3
+    rated_annual_gwh = RATED_POWER_MW * HOURS_PER_YEAR / 1e3
     capacity_factors = turbine_aep_layout / rated_annual_gwh
 
     turbine_aep_csv = OUTPUT_DIR / "optimal_turbine_aep.csv"
@@ -405,8 +414,8 @@ def run(n_turbines: int = 9) -> None:
 
         yaw_opt = YawOptimizationScipy(
             fmodel=fm_yaw,
-            minimum_yaw_angle=-25.0,
-            maximum_yaw_angle=25.0,
+            minimum_yaw_angle=YAW_MIN_ANGLE,
+            maximum_yaw_angle=YAW_MAX_ANGLE,
         )
         df_opt = yaw_opt.optimize()
         yaw_angles = np.array(df_opt["yaw_angles_opt"].iloc[0]).flatten()
@@ -470,7 +479,7 @@ def run(n_turbines: int = 9) -> None:
                 yaw_angles=yaw_angles.reshape(1, -1),
             )
             fm_aep_yaw.run()
-            total_aep_yaw_wh += fm_aep_yaw.get_farm_power().item() * freq * 8760.0
+            total_aep_yaw_wh += fm_aep_yaw.get_farm_power().item() * freq * HOURS_PER_YEAR
 
     aep_yaw = total_aep_yaw_wh / 1e9
     gain_yaw = (aep_yaw / aep_layout - 1) * 100

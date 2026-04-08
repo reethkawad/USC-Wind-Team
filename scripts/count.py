@@ -29,6 +29,7 @@ import pandas as pd
 
 from wind_farm.config import (
     CONFIG_GCH as CONFIG_PATH, WIND_ROSE_CSV, OUTPUT_DIR, ROTOR_DIAMETER,
+    SITE_SIZE_M, MIN_SPACING_D,
 )
 from wind_farm.wind_data import load_wind_rose
 from wind_farm.layouts import build_rowmajor_layout
@@ -37,8 +38,6 @@ from wind_farm.optimization import load_floris_model, compute_aep, run_layout_op
 # ---------------------------------------------------------------------------
 # Parameters  ← edit these
 # ---------------------------------------------------------------------------
-SITE_SIZE_M: float = 5000.0
-MIN_SPACING_D: float = 2.0
 N_MIN: int = 4
 N_MAX: int = 20
 MAXITER: int = 100

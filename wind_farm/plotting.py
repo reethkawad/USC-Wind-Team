@@ -10,6 +10,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from wind_farm.config import FIGURE_DPI
+
 
 def plot_layout_comparison(
     init_x: list,
@@ -67,7 +69,7 @@ def plot_layout_comparison(
         fontsize=13,
     )
     fig.tight_layout()
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")
 
@@ -109,6 +111,6 @@ def plot_wind_rose(
     ax.set_title(title, pad=20, fontsize=13)
     ax.legend(loc="lower left", bbox_to_anchor=(-0.15, -0.15), title="Wind speed", fontsize=9)
 
-    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=FIGURE_DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved: {output_path}")

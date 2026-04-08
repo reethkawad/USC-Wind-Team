@@ -22,7 +22,7 @@ if str(_PROJECT_DIR) not in sys.path:
 
 import numpy as np
 
-from wind_farm.config import CONFIG_GCH, ROTOR_DIAMETER, TI_DEFAULT
+from wind_farm.config import CONFIG_GCH, ROTOR_DIAMETER, TI_DEFAULT, WIND_SPEED_YAW, YAW_MIN_ANGLE, YAW_MAX_ANGLE
 from wind_farm.layouts import build_rowmajor_layout
 from wind_farm.optimization import load_floris_model
 
@@ -38,7 +38,7 @@ def test_yaw_angles_in_bounds_and_improve_power() -> None:
         layout_x=layout_x,
         layout_y=layout_y,
         wind_directions=[270.0],
-        wind_speeds=[8.0],
+        wind_speeds=[WIND_SPEED_YAW],
         turbulence_intensities=[TI_DEFAULT],
     )
 
@@ -49,23 +49,23 @@ def test_yaw_angles_in_bounds_and_improve_power() -> None:
     # Yaw optimisation
     yaw_opt = YawOptimizationScipy(
         fmodel=fm,
-        minimum_yaw_angle=-25.0,
-        maximum_yaw_angle=25.0,
+        minimum_yaw_angle=YAW_MIN_ANGLE,
+        maximum_yaw_angle=YAW_MAX_ANGLE,
     )
     df_opt = yaw_opt.optimize()
     yaw_angles = np.array(df_opt["yaw_angles_opt"].iloc[0]).flatten()
 
     # Bounds
     assert len(yaw_angles) == N, f"Expected {N} yaw angles, got {len(yaw_angles)}"
-    assert (yaw_angles >= -25.0 - 1e-6).all(), "Some yaw angles below -25°"
-    assert (yaw_angles <= 25.0 + 1e-6).all(), "Some yaw angles above +25°"
+    assert (yaw_angles >= YAW_MIN_ANGLE - 1e-6).all(), "Some yaw angles below -25°"
+    assert (yaw_angles <= YAW_MAX_ANGLE + 1e-6).all(), "Some yaw angles above +25°"
 
     # Power with yaw
     fm.set(
         layout_x=layout_x,
         layout_y=layout_y,
         wind_directions=[270.0],
-        wind_speeds=[8.0],
+        wind_speeds=[WIND_SPEED_YAW],
         turbulence_intensities=[TI_DEFAULT],
         yaw_angles=yaw_angles.reshape(1, -1),
     )
