@@ -176,7 +176,7 @@ def compute_aep_with_yaw(
     wind_speeds: np.ndarray,
     freq_table: np.ndarray,
     top_n_dirs: int = 2,
-    wind_speed_yaw: float = 8.0,
+    wind_speed_yaw: float = 8.6,
     ti: float = 0.06,
 ) -> tuple[float, pd.DataFrame]:
     """Compute AEP after per-direction yaw optimisation.

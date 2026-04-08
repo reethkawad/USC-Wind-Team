@@ -28,7 +28,7 @@ from wind_farm.layouts import build_3x3_grid
 from wind_farm.optimization import load_floris_model
 
 TEST_DIRECTIONS = [260.0, 270.0, 280.0]
-WIND_SPEED = 8.0
+WIND_SPEED = 8.6
 SPACING_D = 5.0
 
 

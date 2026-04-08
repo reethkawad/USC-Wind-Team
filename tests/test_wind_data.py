@@ -34,19 +34,19 @@ def test_load_wind_rose() -> None:
     assert abs(total - 1.0) < 1e-6, f"freq_table sums to {total}, expected 1.0"
 
     # Shape
-    assert freq_table.shape == (36, 6), (
-        f"Expected freq_table shape (36, 6), got {freq_table.shape}"
+    assert freq_table.shape == (12, 6), (
+        f"Expected freq_table shape (12, 6), got {freq_table.shape}"
     )
-    assert len(wind_directions) == 36, f"Expected 36 directions, got {len(wind_directions)}"
+    assert len(wind_directions) == 12, f"Expected 12 directions, got {len(wind_directions)}"
     assert len(wind_speeds) == 6, f"Expected 6 speeds, got {len(wind_speeds)}"
 
     # Direction range
     assert wind_directions[0] == 0.0, f"First direction should be 0°, got {wind_directions[0]}"
-    assert wind_directions[-1] == 350.0, f"Last direction should be 350°, got {wind_directions[-1]}"
+    assert wind_directions[-1] == 330.0, f"Last direction should be 330°, got {wind_directions[-1]}"
 
     # Speed range
-    assert wind_speeds[0] == 4.0, f"Min wind speed should be 4 m/s, got {wind_speeds[0]}"
-    assert wind_speeds[-1] == 14.0, f"Max wind speed should be 14 m/s, got {wind_speeds[-1]}"
+    assert wind_speeds[0] == 5.0, f"Min wind speed should be 5 m/s, got {wind_speeds[0]}"
+    assert wind_speeds[-1] == 10.0, f"Max wind speed should be 10 m/s, got {wind_speeds[-1]}"
 
     # No negative frequencies
     assert (freq_table >= 0).all(), "freq_table contains negative values"

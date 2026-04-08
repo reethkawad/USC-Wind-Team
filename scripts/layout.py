@@ -32,7 +32,7 @@ from wind_farm.plotting import plot_layout_comparison
 # ---------------------------------------------------------------------------
 # Site parameters
 # ---------------------------------------------------------------------------
-SITE_SIZE_M = 5000.0
+SITE_SIZE_M = 5320.34
 BOUNDARIES: list[tuple[float, float]] = [
     (0.0, 0.0),
     (SITE_SIZE_M, 0.0),

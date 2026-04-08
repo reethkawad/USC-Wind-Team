@@ -37,7 +37,7 @@ from wind_farm.optimization import load_floris_model, compute_aep, run_layout_op
 # ---------------------------------------------------------------------------
 # Parameters  ← edit these
 # ---------------------------------------------------------------------------
-SITE_SIZE_M: float = 5000.0
+SITE_SIZE_M: float = 5320.34
 MIN_SPACING_D: float = 2.0
 N_MIN: int = 4
 N_MAX: int = 20

@@ -3,9 +3,9 @@
 # Rotor diameter: 126 m, Hub height: 90 m, Rated power: 5 MW
 
 turbine_type: nrel_5MW
-generator_efficiency: 1.0
-hub_height: 90.0
-rotor_diameter: 126.0
+generator_efficiency: 0.96 
+hub_height: 105
+rotor_diameter: 150.0
 TSR: 8.0
 ref_air_density: 1.225
 ref_tilt: 5.0

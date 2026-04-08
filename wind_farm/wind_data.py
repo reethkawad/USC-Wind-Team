@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate import griddata
 
 
 def load_wind_rose(
@@ -64,6 +65,29 @@ def load_wind_rose(
         .reindex(index=wind_directions, columns=wind_speeds, fill_value=0.0)
         .to_numpy(dtype=float)
     )
+
+    # Interpolate to evenly spaced grid for FLORIS compatibility
+    target_dirs = np.arange(0, 360, 30)  # 0, 30, 60, ..., 330
+    target_speeds = np.arange(5, 11, 1)  # 5, 6, 7, 8, 9, 10
+
+    # Create mesh for current grid
+    dirs_mesh, speeds_mesh = np.meshgrid(wind_directions, wind_speeds, indexing='ij')
+    points = np.column_stack([dirs_mesh.flatten(), speeds_mesh.flatten()])
+    values = freq_table.flatten()
+
+    # Target mesh
+    target_dirs_mesh, target_speeds_mesh = np.meshgrid(target_dirs, target_speeds, indexing='ij')
+
+    # Interpolate
+    interpolated = griddata(points, values, (target_dirs_mesh, target_speeds_mesh), method='linear', fill_value=0.0)
+
+    # Clip negative values to 0
+    interpolated = np.clip(interpolated, 0.0, None)
+
+    # Update to interpolated grid
+    wind_directions = target_dirs
+    wind_speeds = target_speeds
+    freq_table = interpolated
 
     total = freq_table.sum()
     if total > 0:

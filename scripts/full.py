@@ -47,8 +47,8 @@ from wind_farm.plotting import plot_layout_comparison, plot_wind_rose
 # ---------------------------------------------------------------------------
 # Site / pipeline parameters
 # ---------------------------------------------------------------------------
-SITE_SIZE_M = 5000.0
-N_TURBINES = 9
+SITE_SIZE_M = 5320.34
+N_TURBINES = 25
 BOUNDARIES = [
     (0.0, 0.0),
     (SITE_SIZE_M, 0.0),
@@ -59,15 +59,15 @@ N_YAW_DIRS = 2   # number of top-frequency directions to yaw-optimise
 
 
 def plot_wake_optimised(fm, layout_x: list, layout_y: list, output_path: Path) -> None:
-    """Wake cut plane at hub height for optimised layout at 270° / 8 m/s."""
+    """Wake cut plane at hub height for optimised layout at 180° / 8 m/s."""
     import floris.flow_visualization as flowviz
     import floris.layout_visualization as layoutviz
 
     fm.set(
         layout_x=layout_x,
         layout_y=layout_y,
-        wind_directions=[270.0],
-        wind_speeds=[8.0],
+        wind_directions=[180.0],
+        wind_speeds=[8.6],
         turbulence_intensities=[TI_DEFAULT],
         yaw_angles=np.zeros((1, len(layout_x))),
     )
@@ -80,7 +80,7 @@ def plot_wake_optimised(fm, layout_x: list, layout_y: list, output_path: Path) -
     layoutviz.plot_turbine_rotors(fm, ax=ax)
     farm_mw = fm.get_turbine_powers().sum() / 1e6
     ax.set_title(
-        f"Wake Field — Optimised Layout, Wind 270° at 8 m/s\n"
+        f"Wake Field — Optimised Layout, Wind 180° at 8 m/s\n"
         f"Farm power = {farm_mw:.2f} MW  |  GCH Wake Model",
         fontsize=13,
     )
@@ -148,7 +148,7 @@ def run() -> None:
                    OUTPUT_DIR / "full_analysis_wind_rose.png")
 
     # Step 2: Baseline AEP
-    print("\n[2/5] Computing baseline AEP (3×3 grid) …")
+    print("\n[2/5] Computing baseline AEP (perfect-square grid) …")
     layout_x_init, layout_y_init = build_meshgrid_layout(
         n_turbines=N_TURBINES, rotor_diameter=ROTOR_DIAMETER, site_size=SITE_SIZE_M,
     )
@@ -179,7 +179,7 @@ def run() -> None:
         aep_opt_gwh=aep_layout,
         output_path=OUTPUT_DIR / "full_analysis_layout.png",
         title="Turbine Layout: Initial vs Optimised",
-        init_label="Initial (3×3 grid)",
+        init_label="Initial (grid layout)",
         opt_label="Layout-optimised",
     )
 
@@ -191,6 +191,7 @@ def run() -> None:
         fm_yaw, layout_x_opt, layout_y_opt,
         wind_rose, wind_directions, wind_speeds, freq_table,
         top_n_dirs=N_YAW_DIRS,
+        wind_speed_yaw=8.6,  # optimise yaw at 8.6 m/s (near rated)
     )
     print(f"      Yaw optimisation complete in {time.perf_counter() - t0:.1f} s")
     print(f"      Combined AEP: {aep_combined:.2f} GWh  "
@@ -210,7 +211,7 @@ def run() -> None:
     total_gain = aep_combined - aep_init
 
     report = pd.DataFrame([
-        {"stage": "Baseline (3x3 grid)", "AEP_GWh": round(aep_init, 3),
+        {"stage": "Baseline (grid layout)", "AEP_GWh": round(aep_init, 3),
          "gain_GWh": 0.0, "gain_pct": 0.0},
         {"stage": "After layout optimisation", "AEP_GWh": round(aep_layout, 3),
          "gain_GWh": round(total_layout_gain, 3),

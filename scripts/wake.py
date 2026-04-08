@@ -130,7 +130,7 @@ def run() -> None:
         layout_x=layout_x,
         layout_y=layout_y,
         wind_directions=[270.0],
-        wind_speeds=[8.0],
+        wind_speeds=[8.6],
         turbulence_intensities=[TI_DEFAULT],
     )
 

@@ -58,7 +58,7 @@ from wind_farm.plotting import plot_layout_comparison
 # ---------------------------------------------------------------------------
 # Site parameters — edit if needed
 # ---------------------------------------------------------------------------
-SITE_SIZE_M: float = 5000.0
+SITE_SIZE_M: float = 5320.34
 MIN_SPACING_D: float = 2.0
 LAYOUT_MAXITER: int = 300          # higher than count sweep (100)
 YAW_FREQ_THRESHOLD: float = 0.01   # directions contributing >1% of annual hours
